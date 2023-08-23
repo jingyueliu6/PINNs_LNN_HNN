@@ -16,97 +16,51 @@ def rk4_step(f, x, y, t, h):
 
 
 def mass_matrix_fn(q, n_dof, shape, activation, epsilon, shift):
-    assert n_dof > 0
     n_output = int((n_dof ** 2 + n_dof) / 2)  # the number of values of the lower triangle matrix
-
-    # Calculate the indices of the diagonal elements of L:
-    idx_diag = np.arange(n_dof, dtype=int) + 1
-    idx_diag = (idx_diag * (idx_diag + 1) / 2 - 1).astype(int)
-    # [0 2 5]
-    '''
-    0 * *
-    1 2 *
-    3 4 5
-    '''
-
-    # Calculate the indices of the off-diagonal elements of L:
-    idx_tril = np.setdiff1d(np.arange(n_output), idx_diag)
-    # [1, 3, 4]
-
-    # Indexing for concatenation of l_diagonal and l_off_diagonal
-    cat_idx = np.hstack((idx_diag, idx_tril))
-    # [0 2 5 1 3 4]
-    idx = np.arange(cat_idx.size)[np.argsort(cat_idx)]
-    # [0 2 5 1 3 4]
-    # [0 1 2 3 4 5]
-    # [0 3 1 4 5 2]
-
-    # Compute Matrix Indices
-    mat_idx = np.tril_indices(n_dof)
-    # (array([0, 1, 1, 2, 2, 2]), array([0, 0, 1, 0, 1, 2]))
-    # the first is the row num, the second is the column num, of the lower triangle matrix
-    # mat_idx = jax.ops.index[..., mat_idx[0], mat_idx[1]]
 
     # Compute Matrix Indices
     net = hk.nets.MLP(output_sizes=shape + (n_output, ),  # shape defined the layers and their neural numbers
                       activation=activation,
                       name="mass_matrix")
 
-    # Apply feature transform:
     l_diagonal, l_off_diagonal = jnp.split(net(q), [n_dof, ], axis=-1)
 
     # Ensure positive diagonal:
-    l_diagonal = 3.5 * jax.nn.sigmoid(l_diagonal)
-    l_off_diagonal = jax.nn.tanh(l_off_diagonal)
-    vec_lower_triangular = jnp.concatenate((l_diagonal, l_off_diagonal), axis=-1)[..., idx]
+    l_diagonal = jax.nn.softplus(l_diagonal + shift) + epsilon
 
     triangular_mat = jnp.zeros((n_dof, n_dof))
-    # triangular_mat = jax.ops.index_update(triangular_mat, mat_idx, vec_lower_triangular[:])
-    triangular_mat = triangular_mat.at[mat_idx].set(vec_lower_triangular[:])
-    mass_mat = jnp.matmul(triangular_mat, triangular_mat.transpose()).transpose()
-    return mass_mat
-    # return triangular_mat
+    diagonal_index = np.diag_indices(n_dof)
+    tril_index = np.tril_indices(n_dof, -1)
+    triangular_mat = triangular_mat.at[diagonal_index].set(l_diagonal[:])
+    triangular_mat = triangular_mat.at[tril_index].set(l_off_diagonal[:])
 
+    mass_mat = jnp.matmul(triangular_mat, triangular_mat.transpose())
+    return mass_mat
 
 
 def dissipative_matrix(q, n_dof, shape, activation):
     assert n_dof > 0
     n_output = int((n_dof ** 2 + n_dof) / 2)  # the number of values of the lower triangle matrix
 
-    # Calculate the indices of the diagonal elements of L:
-    idx_diag = np.arange(n_dof, dtype=int) + 1
-    idx_diag = (idx_diag * (idx_diag + 1) / 2 - 1).astype(int)
-
-    # Calculate the indices of the off-diagonal elements of L:
-    idx_tril = np.setdiff1d(np.arange(n_output), idx_diag)
-
-    # Indexing for concatenation of l_diagonal and l_off_diagonal
-    cat_idx = np.hstack((idx_diag, idx_tril))
-
-    idx = np.arange(cat_idx.size)[np.argsort(cat_idx)]
-
-    # Compute Matrix Indices
-    mat_idx = np.tril_indices(n_dof)
-
-    # the first is the row num, the second is the column num, of the lower triangle matrix
-    # mat_idx = jax.ops.index[..., mat_idx[0], mat_idx[1]]
-
     # Compute Matrix Indices
     net = hk.nets.MLP(output_sizes=shape + (n_output, ),  # shape defined the layers and their neural numbers
                       activation=activation,
                       name="dissipative_matrix")
 
-    # Apply feature transform:
+    # scaler to constraint the matrix
+    scaler = 0.4
     l_diagonal, l_off_diagonal = jnp.split(net(q), [n_dof, ], axis=-1)
 
     l_diagonal = jax.nn.sigmoid(l_diagonal)
-    l_off_diagonal = jax.nn.tanh(l_off_diagonal)
-    vec_lower_triangular = jnp.concatenate((l_diagonal, l_off_diagonal), axis=-1)[..., idx]
 
     triangular_mat = jnp.zeros((n_dof, n_dof))
+    diagonal_index = np.diag_indices(n_dof)
+    tril_index = np.tril_indices(n_dof, -1)
+    triangular_mat = triangular_mat.at[diagonal_index].set(l_diagonal[:])
+    triangular_mat = triangular_mat.at[tril_index].set(l_off_diagonal[:])
 
-    triangular_mat = triangular_mat.at[mat_idx].set(vec_lower_triangular[:])
     dissipative_mat = jnp.matmul(triangular_mat, triangular_mat.transpose())
+    dissipative_mat *= scaler
     return dissipative_mat
 
 
