@@ -237,7 +237,7 @@ test_losses = {"forward_loss": [],
 
 print("")
 epoch_i = 0
-step = 50
+step = 5
 while epoch_i < hyper['max_epoch']:
     n_batches = 0
     logs = jax.tree_map(lambda x: x * 0.0, logs)
