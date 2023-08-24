@@ -205,18 +205,7 @@ for i in range(n):
 
 states = np.array(states)
 
-# np.savetxt("./data_2_figure/one_segment_simulation_real_long.csv", states_real, delimiter=",")
-# np.savetxt("./data_2_figure/one_segment_simulation_pred_long.csv", states, delimiter=",")
-# # plt.rcParams['text.usetex'] = True
-# plt.rcParams['font.family'] = ['serif']
-# plt.rcParams['font.serif'] = ['Times New Roman'] + plt.rcParams['font.serif']
-# plt.rcParams['mathtext.fontset'] = 'stix'
-# # plt.rc('font', family='serif', serif='Times')
-# # plt.rc('text', usetex=True)
-# # plt.rc('xtick', labelsize=8)
-# # plt.rc('ytick', labelsize=8)
-# # plt.rc('axes', labelsize=8)
-#
+
 plt.subplot(2, 1, 1)
 plt.grid()
 plt.plot(t, states_real[:, 0], 'g', alpha=0.4, linewidth=3, label='$\Delta_x$')
@@ -240,77 +229,4 @@ plt.ylabel("length error [m]")
 plt.xlabel('time [s]')
 plt.yticks(size=12)
 plt.xticks(size=12)
-# plt.title(f'Initial_State: delta_x({init_state0[0]:.1e}), delta_y({init_state0[1]:.1e}), dL({init_state0[2]:.1e})', fontdict=font1)
-# plt.subplot(1, 2, 2)
-# plt.plot(t, states_real[:, 3], 'm', alpha=0.5, linewidth=2, label='real_delta_x_velocity')
-# plt.plot(t, states[:, 3], 'm', ls='--', linewidth=1, label='pred_delta_x_velocity')
-# plt.plot(t, states_real[:, 4], 'b', alpha=0.5,  linewidth=2, label='real_delta_y_velocity')
-# plt.plot(t, states[:, 4], 'b',  ls='--', linewidth=1, label='pred_delta_y_velocity')
-# plt.plot(t, states_real[:, 5], 'purple', alpha=0.5,  linewidth=2, label='real_dL_velocity')
-# plt.plot(t, states[:, 5], 'purple',  ls='--', linewidth=1, label='pred_dL_velocity')
-# plt.legend(fontsize=10, loc='upper right')
-# plt.ylabel("velocity")
-# plt.xlabel('time[s]')
-# plt.title(f'Initial_Velocity: delta_x({init_state0[3]:.1e}), delta_y({init_state0[4]:.1e}) , dL({init_state0[5]:.1e})', fontdict=font1)
-plt.show()
 
-# import numpy as np
-# from mpl_toolkits.mplot3d import Axes3D
-# import matplotlib.pyplot as plt
-# from matplotlib import animation
-# from matplotlib.patches import Rectangle
-#
-# fig = plt.figure(figsize=(8, 8),)
-# ax = fig.gca(fc='whitesmoke',
-#              projection='3d'
-#             )
-#
-# # print(states_real)
-# # print("------------------------")
-# # print(states)
-# # 二元函数定义域平面
-# x = np.linspace(-2, 2, 10)
-# y = np.linspace(-2, 2, 10)
-# X, Y = np.meshgrid(x, y)
-#
-# ax.plot_surface(X,
-#                 Y,
-#                 Z=X*0,
-#                 color='black',
-#                 alpha=0.5
-#                )
-# ax.view_init(elev=5, azim=-120)
-# def draw_line(state):
-#     dx = state[0]
-#     dy = state[1]
-#     dL = state[2]
-#     L = dL + 1
-#     th = np.sqrt(dx ** 2 + dy ** 2) / 1.0
-#     phi = np.arctan(dy / dx)
-#
-#     radius = L / th
-#     center = -radius
-#     i = np.linspace(0, 1, 20)
-#     z = -radius * np.sin(th * i)
-#     xy = radius * (1 - np.cos(th * i))
-#     x = xy * np.cos(phi)
-#     y = xy * np.sin(phi)
-#     return x, y, z
-#
-# ims = []
-# i = 0
-# for state_real, state in zip(states_real, states):
-#     x_real, y_real, z_real = draw_line(state_real)
-#     x, y, z = draw_line(state)
-#     im_real, = ax.plot(x_real, y_real, z_real, color='g', alpha=0.5, linewidth=4.0, label='real_system')
-#     im, = ax.plot(x, y, z, color='r', linewidth=0.9, label='predicted_system')
-#     title = ax.text(-0.3, -1.5, -3, "one-segment 3D soft manipulator: time = {:.2f}s".format(i*time_step),)
-#     if i == 0:
-#         ax.legend(loc='upper right')
-#     ims.append([im, im_real, title])
-#     i += 1
-#
-# ani = animation.ArtistAnimation(fig, ims, interval=n, blit=False)
-#
-# ani.save("/home/jing/Desktop/physics-informed-machine-learning/figures/one_segment_soft_robot.gif", writer='pillow')
-# plt.show()
