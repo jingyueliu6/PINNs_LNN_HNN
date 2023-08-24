@@ -1,10 +1,7 @@
-import sys
-
-
 import time
 import math
 
-from panda import Panda ## find a pybullet example of panda to implement it (the provided model trained on panda without gripper)
+from panda import Panda ## find a pybullet panda example, for the trained model, the panda do not have the gripper
 import jax.numpy as jnp
 import jax
 from functools import partial
@@ -14,8 +11,9 @@ import pickle
 import haiku as hk
 import DeLaN_model_v3 as delan
 
-Kp = [100.0, 50.0, 25.0, 25.0, 10.0, 12.0, 10.0]
+Kp = [100.0, 100.0, 100.0, 150.0, 20.0, 12.0, 20.0]
 Kd = [10.0, 10.0, 10.0, 3.0, 1.0, 2.5, 0.5]
+
 duration = 20
 stepsize = 1e-3
 
@@ -25,9 +23,9 @@ t = 0.
 pos, vel = robot.getJointStates()
 acc = [0 for x in pos]
 pos_exp = pos
+vel_exp = vel
 
-
-with open(f"./models/franka_pybullet_1000Hz", "rb") as f:
+with open(f"./franka_attempt_1000Hz.jax", "rb") as f:
     data = pickle.load(f)
 
 hyper = data["hyper"]
@@ -39,7 +37,7 @@ activations = {
     'sigmoid': jax.nn.sigmoid,
 }
 
-#def structured_lagrangian_fn(q, qd, n_dof, shape, activation, epsilon, shift)conda 
+#def structured_lagrangian_fn(q, qd, n_dof, shape, activation, epsilon, shift)conda
 lagrangian_fn = hk.transform(partial(
     delan.structured_lagrangian_fn,
     n_dof=hyper['n_dof'],
@@ -70,18 +68,26 @@ for i in range(int(duration / stepsize)):
         print("Simulation time: {:.3f}".format(robot.t))
         print("pos: ", pos)
     acc_exp = [0 for x in pos]
-
-    torque = inverse_model(np.concatenate([pos, vel], axis=0), np.array(acc_exp))
-
     pos_exp[0] = -0.3 * math.sin(2 * math.pi * 0.2 * t)
-    pos_exp[1] = 0.1 * math.sin(2 * math.pi * 0.15 * t)
+    pos_exp[1] = 0.1 * math.sin(2 * math.pi * 0.1 * t)
     pos_exp[2] = -0.3 * math.sin(2 * math.pi * 0.1 * t)
     pos_exp[3] = -0.5 * math.sin(2 * math.pi * 0.2 * t) - 1.0
     pos_exp[4] = -0.1 * math.sin(2 * math.pi * 0.3 * t)
     pos_exp[5] = 1.0* math.sin(2 * math.pi * 0.3 * t) + 1.0
     pos_exp[6] = -0.05 * math.sin(2 * math.pi * 0.3 * t)
+
+    vel_exp[0] = -0.3 * 2 * math.pi * 0.2 *  math.cos(2 * math.pi * 0.2 * t)
+    vel_exp[1] = 0.1 * 2 * math.pi * 0.1 *  math.cos(2 * math.pi * 0.1 * t)
+    vel_exp[2] = -0.3 * 2 * math.pi * 0.1 *  math.cos(2 * math.pi * 0.1 * t)
+    vel_exp[3] = -0.5 * 2 * math.pi * 0.2 *  math.cos(2 * math.pi * 0.2 * t) - 1.0
+    vel_exp[4] = -0.1 * 2 * math.pi * 0.3 *  math.cos(2 * math.pi * 0.3 * t)
+    vel_exp[5] = 1.0 * 2 * math.pi * 0.3 * math.cos(2 * math.pi * 0.3 * t)
+    vel_exp[6] = -0.05 * 2 * math.pi * 0.3 * math.cos(2 * math.pi * 0.3 * t)
+
+    torque = inverse_model(np.concatenate([pos, vel], axis=0), np.array(acc_exp))
+
     torques.append(torque)
-    target_torque = Kp * (np.array(pos_exp) - np.array(pos)) - Kd * (np.array(vel)) + torque
+    target_torque = Kp * (np.array(pos_exp) - np.array(pos)) + Kd * (np.array(vel_exp) - np.array(vel)) + torque
 
     pos, vel, = robot.getJointStates()
     robot.setTargetTorques(target_torque)
@@ -103,6 +109,7 @@ for i in range(int(duration / stepsize)):
 
 state = np.array(state)
 torques = np.array(torques)
+
 
 plt.subplot(7, 1, 1)
 plt.plot(ts, state[:, 0], 'g', alpha=0.4, linewidth=1, label=r'$j_1$')
