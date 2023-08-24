@@ -70,22 +70,10 @@ def input_transform_matrix(q, n_dof, actuator_dof, shape, activation):
                       activation=activation,
                       name="input_transform_matrix")
     input_mat = net(q).reshape(n_dof, actuator_dof)
+    '''
+    Adding the following line for the two segment which A elements are always between -1 t0 1 
+    '''
     # input_mat = jax.nn.tanh(net(q)).reshape(n_dof, actuator_dof)
-    '''
-    Adding the following line for the two segment which A elements are always between -1 t0 1
-    '''
-    # n_output = int(n_dof * actuator_dof / 2)
-    # net = hk.nets.MLP(output_sizes=shape + (n_output, ),  # shape defined the layers and their neural numbers
-    #                   activation=activation,
-    #                   name="input_transform_matrix")
-    # # l_diagonal, l_off_diagonal = jnp.split(net(q), [n_dof, ], axis=-1)
-    # elems = jax.nn.tanh(net(q))
-    # seg1, seg2 = jnp.split(elems, [int(n_output/2), ], axis=-1)
-    # seg1_mat = seg1.reshape(int(n_dof/2), int(n_dof/2))
-    # seg2_mat = seg2.reshape(int(n_dof/2), int(n_dof/2))
-    # left = jnp.row_stack((seg1_mat, jnp.zeros((int(n_dof/2), int(n_dof/2)))))
-    # right = jnp.row_stack((jnp.zeros((int(n_dof / 2), int(n_dof / 2))), seg2_mat))
-    # input_mat = jnp.hstack((left, right))
     return input_mat
 
 
@@ -118,7 +106,6 @@ def forward_model(params, key, lagrangian, dissipative_mat, input_mat, n_dof):
         l_params = params["lagrangian"]
 
         # Compute Lagrangian and Jacobians:
-        # def structured_lagrangian_fn(q, qd, n_dof, shape, activation, epsilon, shift):
         lagrangian_value_and_grad = jax.value_and_grad(lagrangian, argnums=argnums)
         L, (dLdq, dLdqd) = lagrangian_value_and_grad(l_params, key, q, qd)
 
@@ -128,23 +115,14 @@ def forward_model(params, key, lagrangian, dissipative_mat, input_mat, n_dof):
 
         # Compute Dissipative term
         d_params = params["dissipative"]
-        # def dissipative_matrix(qd, n_dof, shape, activation):
         dissipative = dissipative_mat(d_params, key, q)
 
         # for A(q) as a net
         i_params = params["input_transform"]
         input_transform = input_mat(i_params, key, q)
 
-        # input_transform = input_mat(q)
-        # # Compute the forward model:
-        # # qdd_pred = jnp.linalg.inv(d2Ld2qd + 1.e-7 * jnp.eye(n_dof)) @ \
-        # #            (input_transform @ tau - d2L_dqddq @ qd + dLdq - dissipative @ qd)
-
         qdd_pred = jnp.linalg.pinv(d2Ld2qd) @ \
                    (input_transform @ tau - d2L_dqddq @ qd + dLdq - dissipative @ qd)
-        # input_mat = np.array([[0], [1]])
-        # qdd_pred = jnp.linalg.inv(d2Ld2qd + 1.e-4 * jnp.eye(n_dof)) @ \
-        #            (input_mat @ tau - d2L_dqddq @ qd + dLdq - dissipative @ qd)
 
         return jnp.concatenate([qd, qdd_pred])
     return equation_of_motion
@@ -177,10 +155,10 @@ def inverse_model(params, key, lagrangian, dissipative_mat, input_mat, n_dof):
 
         # Compute the inverse model
         tau = jnp.linalg.inv(input_transform) @ (d2Ld2qd @ qdd + d2L_dqddq @ qd - dLdq + dissipative @ qd)
+        return tau
     return equation_of_motion
 
 def loss_fn(params, q, qd, tau, q_next, qd_next, lagrangian, dissipative_mat, input_mat, n_dof, time_step=None):
-    # vmap_dim = (0, 0)
     states = jnp.concatenate([q, qd], axis=1)
     targets = jnp.concatenate([q_next, qd_next], axis=1)
 
@@ -188,11 +166,8 @@ def loss_fn(params, q, qd, tau, q_next, qd_next, lagrangian, dissipative_mat, in
     f = jax.jit(forward_model(params=params, key=None, lagrangian=lagrangian, dissipative_mat=dissipative_mat, input_mat=input_mat, n_dof=n_dof))
     if time_step is not None:
         preds = jax.vmap(partial(rk4_step, f, t=0.0, h=time_step), (0, 0))(states, tau)
-        # preds = jax.vmap(normalize_dp)(preds)
-        # preds => [q_next_pred, qd_next_pred]
     else:
         preds = jax.vmap(f, (0, 0))(states, tau)
-        # preds => [qd_pred, qdd_pred]
 
     forward_error = jnp.sum((targets - preds)**2, axis=-1)
     mean_forward_error = jnp.mean(forward_error)
