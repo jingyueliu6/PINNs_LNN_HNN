@@ -15,13 +15,16 @@ import matplotlib.pyplot as plt
 
 import DeLaN_model_v3 as delan
 from utils import ReplayMemory
+import os
+
+dir_path = os.path.dirname(os.path.realpath(__file__))
 
 
 print("Loading Data:")
 '''
 1. Data Loading and data preprocess
 '''
-with open(f"/home/jing/Desktop/physics-informed-machine-learning/systems/data/franka_data_real_500Hz_new.jax", 'rb') as f:
+with open(f"./data/franka_data_real_500Hz.jax", 'rb') as f:
     data_information = pickle.load(f)
 
 time_step = data_information["time_step"]
@@ -252,22 +255,7 @@ while epoch_i < hyper['max_epoch']:
         print(f"For = {test_logs['forward_mean']:.3e} \u00B1 {1.96 * np.sqrt(test_logs['forward_var']):.2e}")
         test_losses["forward_loss"].append(test_logs['forward_mean'])
         test_losses['forward_var'].append(test_logs['forward_var'])
-        # if epoch_i > 20000 and np.mod(epoch_i, 5000) == 0:
-        #       with open(f"/home/jing/Desktop/physics-informed-machine-learning/DeLaN/models/two_segment_backup/two_segment_spatial_soft_robot{epoch_i}.jax", "wb") as file:
-        #           pickle.dump(
-        #               {"epoch": epoch_i,
-        #                "current_training_loss": logs['forward_mean'],
-        #                "current_training_variance": logs['forward_var'],
-        #                "current_test_loss": test_logs['forward_mean'],
-        #                "current_test_variance":test_logs['forward_var'],
-        #               "hyper": hyper,
-        #               "params": params},
-        #               file)
-        #       print(f"Saving Epoch: {epoch_i} training model; current_training_loss: {logs['forward_mean']}, current_training_variance:  {logs['forward_var']}, current_test_loss: {test_logs['forward_mean']}, current_test_variance: {test_logs['forward_var']}")
 
-
-print(train_losses)
-print(test_losses)
 
 plt.style.use('seaborn-whitegrid')
 palette = plt.get_cmap('Set1')
@@ -300,7 +288,7 @@ ax.set_ylabel('loss', fontsize=12)
 plt.show()
 
 if save_model:
-    with open(f"./models/franka_real_new7.jax", "wb") as file:
+    with open(f"./models/franka_real_delan.jax", "wb") as file:
         pickle.dump(
             {"epoch": epoch_i,
              "hyper": hyper,
