@@ -92,26 +92,16 @@ u0[450:470] += 0.3
 # u0 = - np.ones(shape=(n, 3)) * 0.7 + np.random.random(size=(n, 3)) * 0.8
 # u0[200:230] -= 0.15
 # u0[600:] += 0.65
+
+
 ###3.
 # init_state0 = np.array([-1.5, -1.11, 0.055, -0.0, 0.0, 0.11])
-# u0 = np.random.normal(size=(n, 3))*0.1 + np.ones(shape=(n, 3)) * 1.25
+# u0 = np.random.normal(size=(n, 3))*0.3 + np.ones(shape=(n, 3)) * 1.25
 # u0[200:230] += 0.05
-# init_state0 = np.array([0.5, 0.5, 3.0, 0.01, 0.01, 0.1])
-#
-# u0 = np.ones(shape=(n, 3)) * 1.17 + np.random.random(size=(n, 3)) * 0.4
-# u0[100:120] += 0.9
-# u0[150:160] += 1.1
-# u0[180:, 0] += 0.5
-# u0[300:420] += 0.32
-# u0[450:470] += 0.3
-# u0[0:20] += 2.2
-# u0[300:320] += 0.2
-# u0[400:420] += 0.5
-#
-u0[1600:1605] -= 2.0
-u0[1800:1820] += 1.5
 
-u0[1500:1510] -= 1.5
+###4.
+init_state0 = np.array([0.5, 0.5, 3.0, 0.01, 0.01, 0.1])
+u0 = np.ones(shape=(n, 3)) * 1.17 + np.random.random(size=(n, 3)) * 0.4
 
 state_transformation_fn = partial(rk4_step, equation_of_motion, t=0.0, h=time_step)
 
