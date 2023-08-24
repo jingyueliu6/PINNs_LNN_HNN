@@ -10,12 +10,15 @@ import optax
 import numpy as np
 from utils import ReplayMemory
 import pickle
+import os
+
+dir_path = os.path.dirname(os.path.realpath(__file__))
 
 # package for plot
 import matplotlib.pyplot as plt
 
 
-with open(f"../systems/data/one_segment_soft_robot7.jax", 'rb') as f:
+with open(f"../data/one_segment_soft_robot.jax", 'rb') as f:
     data_information = pickle.load(f)
 
 time_step = data_information["time_step"]
@@ -30,10 +33,10 @@ if shuffle_data:
     shuffle(c)
     states, inputs, targets = zip(*c)
 
-states = np.array(states)  # (3000, 4)
+states = np.array(states)
 inputs = np.array(inputs)
 targets = np.array(targets)
-# print(states.shape)
+
 states = states[:5000]
 targets = targets[:5000]
 inputs = inputs[:5000]
@@ -46,16 +49,12 @@ train_targets, test_targets = targets[:div, :], targets[div:, :]
 train_inputs, test_inputs = inputs[:div, :], inputs[div:, :]
 
 train_q, train_p = jnp.split(train_states, 2, axis=1)
-# print(train_states[:2])
-# print(train_q[:2])
-# print(train_p[:2])
 train_q_next, train_p_next = jnp.split(train_targets, 2, axis=1)
 
 test_q, test_p = jnp.split(test_states, 2, axis=1)
 test_q_next, test_p_next = jnp.split(test_targets, 2, axis=1)
 
-# print(train_inputs.shape) #(2700, 1)
-# print(train_inputs[0].shape)
+
 activations = {
     'tanh': jnp.tanh,
     'softplus': jax.nn.softplus,
@@ -132,8 +131,6 @@ dissipative_mat = dissipative_fn.apply
 input_mat = input_mat_fn.apply
 
 
-#def forward_model(params, key, hamiltonian, dissipative_mat, input_mat):
-    #def hamiltons_equation(state, tau, t=None):
 feed_forward_model = hnn.forward_model(params=params, key=None, hamiltonian=hamiltonian, dissipative_mat=dissipative_mat, input_mat=input_mat)
 state0 = jnp.concatenate([q[0], p[0]])
 _ = feed_forward_model(state0, tau[0]) # [ 0.31990784  0.17606097  0.57422537 -0.806008  ]
@@ -275,7 +272,7 @@ plt.show()
 
 
 
-with open(f"models/one_segment_planer_soft_robot_with_input_matnet_new4.jax", "wb") as file:
+with open(f"./models/one_segment_planer_soft_robot_hnn.jax", "wb") as file:
     pickle.dump(
         {"epoch": epoch_i,
          "hyper": hyper,

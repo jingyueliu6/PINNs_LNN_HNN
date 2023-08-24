@@ -9,6 +9,9 @@ import time
 import optax
 import numpy as np
 import pickle
+import os
+
+dir_path = os.path.dirname(os.path.realpath(__file__))
 
 # package for plot
 import matplotlib.pyplot as plt
@@ -21,7 +24,7 @@ print("Loading Data:")
 '''
 1. Data Loading and data preprocess
 '''
-with open(f"/home/jing/Desktop/physics-informed-machine-learning/systems/data/two_segment_spatial_soft_robot_resample_data_1000Hz_new2.jax", 'rb') as f:
+with open(f"../data/two_segment_spatial_soft_robot_resample_data_1000Hz.jax", 'rb') as f:
     data_information = pickle.load(f)
 
 time_step = data_information["time_step"]
@@ -190,17 +193,6 @@ optimizer3 = optax.adamw(
     weight_decay=hyper['weight_decay']
 )
 
-# optimizer1 = optax.sgd(
-#     learning_rate=hyper['learning_rate'],
-# )
-
-# optimizer2 = optax.sgd(
-#     learning_rate=hyper['learning_rate']*2,
-# )
-
-# optimizer3 = optax.sgd(
-#     learning_rate=hyper['learning_rate'],
-# )
 
 opt1 = optimizer1.init(params["lagrangian"])
 opt2 = optimizer2.init(params["dissipative"])
@@ -283,22 +275,7 @@ while epoch_i < hyper['max_epoch']:
         print(f"For = {test_logs['forward_mean']:.3e} \u00B1 {1.96 * np.sqrt(test_logs['forward_var']):.2e}")
         test_losses["forward_loss"].append(test_logs['forward_mean'])
         test_losses['forward_var'].append(test_logs['forward_var'])
-        # if epoch_i > 20000 and np.mod(epoch_i, 4000) == 0:
-        #       with open(f"/home/jing/Desktop/physics-informed-machine-learning/DeLaN/models/two_segment_backup/two_segment_spatial_soft_robot{epoch_i}.jax", "wb") as file:
-        #           pickle.dump(
-        #               {"epoch": epoch_i,
-        #                "current_training_loss": logs['forward_mean'],
-        #                "current_training_variance": logs['forward_var'],
-        #                "current_test_loss": test_logs['forward_mean'],
-        #                "current_test_variance":test_logs['forward_var'],
-        #               "hyper": hyper,
-        #               "params": params},
-        #               file)
-        #       print(f"Saving Epoch: {epoch_i} training model; current_training_loss: {logs['forward_mean']}, current_training_variance:  {logs['forward_var']}, current_test_loss: {test_logs['forward_mean']}, current_test_variance: {test_logs['forward_var']}")
 
-#
-# print(train_losses)
-# print(test_losses)
 
 plt.style.use('seaborn-whitegrid')
 palette = plt.get_cmap('Set1')
@@ -331,7 +308,7 @@ ax.set_ylabel('loss', fontsize=12)
 plt.show()
 
 if save_model:
-    with open(f"./models/two_segment_spatial_soft_robot_resample_data_1000Hz_A_constraint4.jax", "wb") as file:
+    with open(f"./models/two_segment_spatial_soft_robot_1000Hz.jax", "wb") as file:
         pickle.dump(
             {"epoch": epoch_i,
              "hyper": hyper,

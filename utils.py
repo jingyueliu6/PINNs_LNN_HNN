@@ -4,6 +4,7 @@ import jax.numpy as jnp
 import jax
 
 
+## directly from https://github.com/milutter/deep_lagrangian_networks/blob/main/deep_lagrangian_networks/utils.py
 def init_env(args):
     # Set the NumPy Formatter:
     np.set_printoptions(suppress=True, precision=2, linewidth=500,

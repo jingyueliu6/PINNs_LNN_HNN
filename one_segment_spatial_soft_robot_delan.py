@@ -12,6 +12,10 @@ import numpy as np
 from utils import ReplayMemory
 import pickle
 
+import os
+
+dir_path = os.path.dirname(os.path.realpath(__file__))
+
 # package for plot
 import matplotlib.pyplot as plt
 
@@ -19,7 +23,7 @@ print("Loading Data:")
 '''
 1. Data Loading and data preprocess
 '''
-with open(f"../systems/data/one_segment_spatial_soft_robot_new_0.0002.jax", 'rb') as f:
+with open(f"../data/one_segment_spatial_soft_robot_delan.jax", 'rb') as f:
     data_information = pickle.load(f)
 
 time_step = data_information["time_step"]
@@ -35,7 +39,7 @@ if shuffle_data:
     shuffle(c)
     states, inputs, targets = zip(*c)
 
-states = np.array(states) # (5500, 6)
+states = np.array(states)
 inputs = np.array(inputs)
 targets = np.array(targets)
 
@@ -277,10 +281,9 @@ ax.set_xlabel('epoch', fontsize=12)
 ax.set_ylabel('loss', fontsize=12)
 plt.show()
 
-## success model :models/one_segment_spatial_soft_robot_with_input_matnet3.jax (dissipative: 5 * 3), input shape=(hyper['n_width']//2,) * (hyper['n_depth']-1),
 
 if save_model:
-    with open(f"models/one_segment_spatial_soft_robot_0.0002.jax", "wb") as file:
+    with open(f"./models/one_segment_spatial_soft_robot_delan.jax", "wb") as file:
         pickle.dump(
             {"epoch": epoch_i,
              "hyper": hyper,
