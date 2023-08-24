@@ -9,7 +9,14 @@ a Theoretical and Experimental Investigation](https://arxiv.org/pdf/2305.05375.p
 
 ## requirements
 jax                       0.3.4 
+
 jaxlib                    0.3.0+cuda11.cudnn82 
 
+(
+jax                       0.3.25 
+
+jaxlib                    0.3.25+cuda11.cudnn82 
+(for the franka example)
+)
 
 
