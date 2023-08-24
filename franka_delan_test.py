@@ -13,7 +13,7 @@ import os
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
 def load_data():
-    annots = loadmat(f"./data/resample_data/data_test3.mat")
+    annots = loadmat(f"./data/franka_pybullet_test/dataset_test1.mat")
     q = annots["q"]
     dq = annots["dq"]
     tau = annots["input"]
@@ -37,7 +37,7 @@ states_real, targets_real, u = load_data()
 n = states_real.shape[0]
 print(n)
 
-with open(f"./models/franka_real_delan.jax", "rb") as f:
+with open(f"./models/franka_pybullet_1000Hz", "rb") as f:
     data = pickle.load(f)
 
 hyper = data["hyper"]
@@ -80,8 +80,8 @@ steps = int(n)
 print(steps)
 for i in range(steps):
     states.append(state)
-    state = partial(rk4_step, forward_model, t=0.0, h=time_step)(states_real[i], u[i])
-    #state = partial(rk4_step, forward_model, t=0.0, h=time_step)(states[i], u[i])
+    # state = partial(rk4_step, forward_model, t=0.0, h=time_step)(states_real[i], u[i])
+    state = partial(rk4_step, forward_model, t=0.0, h=time_step)(states[i], u[i])
 
 states = np.array(states)
 t = np.arange(0, 2.0e-3*n, 2.0e-3)

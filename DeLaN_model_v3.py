@@ -25,8 +25,9 @@ def mass_matrix_fn(q, n_dof, shape, activation, epsilon, shift):
 
     l_diagonal, l_off_diagonal = jnp.split(net(q), [n_dof, ], axis=-1)
 
-    l_diagonal = 3.5 * jax.nn.sigmoid(l_diagonal)
-    l_off_diagonal = jax.nn.tanh(l_off_diagonal)
+    # l_diagonal = 3.5 * jax.nn.sigmoid(l_diagonal)
+    # l_off_diagonal = jax.nn.tanh(l_off_diagonal)
+    l_diagonal = jax.nn.softplus(l_diagonal)
 
     triangular_mat = jnp.zeros((n_dof, n_dof))
     diagonal_index = np.diag_indices(n_dof)

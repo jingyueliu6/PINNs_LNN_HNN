@@ -24,7 +24,7 @@ print("Loading Data:")
 '''
 1. Data Loading and data preprocess
 '''
-with open(f"./data/franka_data_real_500Hz.jax", 'rb') as f:
+with open(f"./data/franka_data_1000Hz.jax", 'rb') as f:
     data_information = pickle.load(f)
 
 time_step = data_information["time_step"]
@@ -288,7 +288,7 @@ ax.set_ylabel('loss', fontsize=12)
 plt.show()
 
 if save_model:
-    with open(f"./models/franka_real_delan.jax", "wb") as file:
+    with open(f"./models/franka_pybullet_1000Hz.jax", "wb") as file:
         pickle.dump(
             {"epoch": epoch_i,
              "hyper": hyper,
