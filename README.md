@@ -19,4 +19,9 @@ jaxlib                    0.3.25+cuda11.cudnn82
 (for the franka example)
 )
 
+## Data
+The data utilized for training the models is available at: [link to data] (https://drive.google.com/drive/folders/1mzEgNQt-V5AKUr12cnlKj7_jbXqZndC5?usp=drive_link). This link also include some testing datasets. 
+
+Regarding the one-segment spatial robot, no specific generated dataset exists for its testing. Instead, the testing has been conducted by manually selecting initial states and random inputs shown in the code. The results are then compared directly with the corresponding model in MATLAB. About the one-segment planar robot, the test code incorporates an analytical dynamics model. You can select appropriate initial states and inputs to assess its performance.
+
 
