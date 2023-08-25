@@ -120,7 +120,7 @@ def data_generation(init_state, u):
 
 states_real = data_generation(init_state0, u0)
 
-with open(f"./models/one_segment_spatial_soft_robot_with_input_matnet5.jax", 'rb') as f:
+with open(f"./models/one_segment_spatial_soft_robot_delan.jax", 'rb') as f:
     data = pickle.load(f)
 
 
@@ -160,33 +160,6 @@ input_mat_fn = hk.transform(partial(
 ))
 
 
-## colab model
-# #def structured_lagrangian_fn(q, qd, n_dof, shape, activation, epsilon, shift)
-# lagrangian_fn = hk.transform(partial(
-#     delan.structured_lagrangian_fn,
-#     n_dof=hyper['n_dof'],
-#     shape=(hyper['n_width_l'],) * hyper['n_depth_l'],
-#     activation=activations[hyper['activation1']],
-#     epsilon=hyper['diagonal_epsilon'],
-#     shift=hyper['diagonal_shift'],
-# ))
-#
-# #dissipative_matrix(qd, n_dof, shape, activation)
-# dissipative_fn = hk.transform(partial(
-#     delan.dissipative_matrix,
-#     n_dof=hyper['n_dof'],
-#     shape=(hyper['n_width_d'],) * hyper['n_depth_d'],
-#     activation=activations[hyper['activation2']]
-# ))
-#
-# #input_transform_matrix(q, n_dof, actuator_dof, shape, activation)
-# input_mat_fn = hk.transform(partial(
-#     delan.input_transform_matrix,
-#     n_dof=hyper['n_dof'],
-#     actuator_dof=hyper['actuator_dof'],
-#     shape=(hyper['n_width_i'],) * hyper['n_depth_i'],
-#     activation=activations[hyper['activation1']]
-# ))
 
 lagrangian = lagrangian_fn.apply
 dissipative_mat = dissipative_fn.apply
