@@ -71,9 +71,19 @@ def input_transform_matrix(q, n_dof, actuator_dof, shape, activation):
                       name="input_transform_matrix")
     input_mat = net(q).reshape(n_dof, actuator_dof)
     '''
-    Adding the following line for the two segment which A elements are always between -1 t0 1 
+    To easily get the Kp and Kd for the controller of the soft robot, do the following adjustment.
     '''
-    # input_mat = jax.nn.tanh(net(q)).reshape(n_dof, actuator_dof)
+    # n_output = int(n_dof * actuator_dof / 2)
+    # net = hk.nets.MLP(output_sizes=shape + (n_output, ),  # shape defined the layers and their neural numbers
+    #                   activation=activation,
+    #                   name="input_transform_matrix")
+    # elems = jax.nn.tanh(net(q))
+    # seg1, seg2 = jnp.split(elems, [int(n_output/2), ], axis=-1)
+    # seg1_mat = seg1.reshape(int(n_dof/2), int(n_dof/2))
+    # seg2_mat = seg2.reshape(int(n_dof/2), int(n_dof/2))
+    # left = jnp.row_stack((seg1_mat, jnp.zeros((int(n_dof/2), int(n_dof/2)))))
+    # right = jnp.row_stack((jnp.zeros((int(n_dof / 2), int(n_dof / 2))), seg2_mat))
+    # input_mat = jnp.hstack((left, right))
     return input_mat
 
 
