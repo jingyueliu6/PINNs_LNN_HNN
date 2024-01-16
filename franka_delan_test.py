@@ -92,7 +92,7 @@ font1 = {'weight': 'normal',
 plt.rcParams['font.family'] = ['serif']
 plt.rcParams['font.serif'] = ['Times New Roman'] + plt.rcParams['font.serif']
 
-error = jnp.sqrt(jnp.sum((states_real[:, :7] - states[:, :7])**2))/n
+error = jnp.sqrt(jnp.sum((states_real - states)**2))/n
 print(error)
 t = t[:n]
 print(n)
